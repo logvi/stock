@@ -1,0 +1,43 @@
+body{
+    font-family: 'PT Serif', serif, Arial,sans-serif;
+    width: 980px;
+    margin: 0 auto;
+}
+
+#today{
+    float:right;
+}
+
+.TickersInfo{
+    /*display: inline-block;*/
+    margin: 0 auto;
+}
+.TickersInfo table{
+    border-collapse: collapse;
+}
+.TickersInfo table tr.head{
+    text-align: center;
+    color: #9C9898;
+}
+td{
+    border-bottom: 1px solid #DAD1D1;
+    padding:5px;
+}
+td.counter{
+    font-size: 14px;
+}
+tr:hover{
+    background-color: rgba(236, 248, 236, 0.34);
+}
+
+a.upload{
+    font-size: 11px;
+    text-decoration: none;
+}
+a.upload:hover{
+    text-decoration: underline;
+}
+
+tr.row_ticker_select{
+    background-color: #D6F3CE;
+}

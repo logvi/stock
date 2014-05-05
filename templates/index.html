@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    {% block style %}
+        <link href="{% static "css/style.css" %}" rel="stylesheet" type="text/css" />
+        {% block extra_style %}{% endblock %}
+    {% endblock %}
+
+</head>
+<body>
+<p>
+<div id="today">Сегодня {{ now }}</div>
+</p>
+<a class='upload' href="{% url 'upload_per' per='D' cat_id=cat_id %}"> Выгрузить дни</a>&nbsp;
+<a class='upload' href="{% url 'upload_per' per='W' cat_id=cat_id %}"> Выгрузить недели</a>&nbsp;
+<a class='upload' href="{% url 'upload_per' per='M' cat_id=cat_id %}"> Выгрузить месяцы</a>
+<div class="select_cat">
+    <select class="select_cat">
+    {% for row in category %}
+        {% if row.id == cat_id  %}
+            <option selected value={{ row.id }}>{{ row.name }}</option>
+        {% else %}
+            <option value={{ row.id }}>{{ row.name }}</option>
+        {% endif %}
+    {% endfor %}
+    </select>
+</div>
+<p>
+<div class="TickersInfo" align="center">
+    <table>
+    <tr class="head">
+        <td>№</td>
+        <td>Тикер</td>
+        <td>Обновлен</td>
+        {% for row in strategies %}
+            <td>
+            {{ row.name }}
+            </td>
+        {% endfor %}
+    </tr>
+    {% for row in tickers %}
+        {% if row.signals.select_row == True %}
+            <tr class="row_ticker_select">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td class="counter"> {{ row.counter }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.last_update }}</td>
+            {% for st in strategies %}
+                <td>
+                {% for key,value in row.signals.items %}
+                    {% if key == st.identifer %}
+                        {% for val in value %}
+                            {% if val.type == 'up' %}
+                                &nbsp;<span style="color:green" title="{{ val.date }}">{{ val.per }}</span>
+                            {% endif %}
+                            {% if val.type == 'down' %}
+                                &nbsp;<span style="color:red" title="{{ val.date }}">{{ val.per }}</span>
+                            {% endif %}
+                            {% if val.type == 'in' %}
+                                &nbsp;<span style="color:black" title="{{ val.date }}">{{ val.per }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </table>
+<p>
+    {% for row in paginator %}
+        <a href="{% url 'index' page=row cat_id=cat_id %}">{{ row }}</a>
+    {% endfor %}
+</p>
+</div>
+<p>
+{{ test }}
+</p>
+{% block bottom_script %}
+        <script src="http://yandex.st/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+
+        <script src="{% static "js/script.js" %}" type="text/javascript"></script>
+    {% endblock %}
+</body>
+</html>
