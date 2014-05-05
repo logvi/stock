@@ -193,7 +193,7 @@ def loadFromFinam(obj, category_id, per):
             date_from = datetime.datetime.strftime(date_from, "%d.%m.%Y")
             print(date_from)
             a.append(row.finam_id)
-            res = up.uploadFromFinam(obj, 1, a, date_from, None, per)
+            res = up.uploadFromFinam(obj, category_id, a, date_from, None, per)
     #иначе делаем полную выгрузку
     else:
         tickers = Ticker.objects.raw(''' select a.*,b.finam_id from "Tickers" a
