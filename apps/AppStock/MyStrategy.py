@@ -8,7 +8,7 @@ class MyStrategy:
         self.diverMACD = 'diverMACD'
         self.PriceAtEma = 'PriceAtEma'
 
-    #Добавляем описание стратегий в модель где хранятся стратегии
+    #Добавляем описание стратегий в модель где хранятся системы
     def init(self, objModel):
         objModel.objects.get_or_create(name="Дивергенция MACD", identifer=self.diverMACD, description="Дивергенция по MACD(12,26,9)")
         objModel.objects.get_or_create(name="Относительно EMA", identifer=self.PriceAtEma, description="Цена относительно EMA(150,200,360)")

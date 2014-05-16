@@ -1,6 +1,5 @@
 body{
     font-family: 'PT Serif', serif, Arial,sans-serif;
-    width: 980px;
     margin: 0 auto;
 }
 
@@ -40,4 +39,13 @@ a.upload:hover{
 
 tr.row_ticker_select{
     background-color: #D6F3CE;
+}
+
+.user-menu{
+   background-color: #999999;
+}
+
+.main-content{
+    width: 980px;
+    margin: 0 auto;
 }

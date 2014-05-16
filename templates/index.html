@@ -1,90 +1,148 @@
-
 <!DOCTYPE html>{% load static %}
-<html>
-<head>
+<html lang="en">
+  <head>
     <meta charset="utf-8">
-    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--<link rel="shortcut icon" href="../../assets/ico/favicon.ico">-->
+
+    <title>Dashboard Template for Bootstrap</title>
     {% block style %}
         <link href="{% static "css/style.css" %}" rel="stylesheet" type="text/css" />
-        {% block extra_style %}{% endblock %}
+        <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/dashboard.css" %}" rel="stylesheet" type="text/css" />
     {% endblock %}
 
-</head>
-<body>
-<p>
-<div id="today">Сегодня {{ now }}</div>
-</p>
-<a class='upload' href="{% url 'upload_per' per='D' cat_id=cat_id %}"> Выгрузить дни</a>&nbsp;
-<a class='upload' href="{% url 'upload_per' per='W' cat_id=cat_id %}"> Выгрузить недели</a>&nbsp;
-<a class='upload' href="{% url 'upload_per' per='M' cat_id=cat_id %}"> Выгрузить месяцы</a>
-<div class="select_cat">
-    <select class="select_cat">
-    {% for row in category %}
-        {% if row.id == cat_id  %}
-            <option selected value={{ row.id }}>{{ row.name }}</option>
-        {% else %}
-            <option value={{ row.id }}>{{ row.name }}</option>
-        {% endif %}
-    {% endfor %}
-    </select>
-</div>
-<p>
-<div class="TickersInfo" align="center">
-    <table>
-    <tr class="head">
-        <td>№</td>
-        <td>Тикер</td>
-        <td>Обновлен</td>
-        {% for row in strategies %}
-            <td>
-            {{ row.name }}
-            </td>
-        {% endfor %}
-    </tr>
-    {% for row in tickers %}
-        {% if row.signals.select_row == True %}
-            <tr class="row_ticker_select">
-        {% else %}
-            <tr>
-        {% endif %}
-            <td class="counter"> {{ row.counter }}</td>
-            <td>{{ row.name }}</td>
-            <td>{{ row.last_update }}</td>
-            {% for st in strategies %}
-                <td>
-                {% for key,value in row.signals.items %}
-                    {% if key == st.identifer %}
-                        {% for val in value %}
-                            {% if val.type == 'up' %}
-                                &nbsp;<span style="color:green" title="{{ val.date }}">{{ val.per }}</span>
-                            {% endif %}
-                            {% if val.type == 'down' %}
-                                &nbsp;<span style="color:red" title="{{ val.date }}">{{ val.per }}</span>
-                            {% endif %}
-                            {% if val.type == 'in' %}
-                                &nbsp;<span style="color:black" title="{{ val.date }}">{{ val.per }}</span>
-                            {% endif %}
-                        {% endfor %}
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Stockhunter</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            {% for row in strategies %}
+            <li> <a href="#">{{ row.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Dashboard</h1>
+            <p>
+                <div id="today">Сегодня {{ now }}</div>
+            </p>
+            <div class="select_cat">
+                <select class="select_cat">
+                {% for row in category %}
+                    {% if row.id == cat_id  %}
+                        <option selected value={{ row.id }}>{{ row.name }}</option>
+                    {% else %}
+                        <option value={{ row.id }}>{{ row.name }}</option>
                     {% endif %}
                 {% endfor %}
-                </td>
-            {% endfor %}
-        </tr>
-    {% endfor %}
-    </table>
-<p>
-    {% for row in paginator %}
-        <a href="{% url 'index' page=row cat_id=cat_id %}">{{ row }}</a>
-    {% endfor %}
-</p>
-</div>
-<p>
-{{ test }}
-</p>
-{% block bottom_script %}
-        <script src="http://yandex.st/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+                </select>
+            </div>
+          <h2 class="sub-header">Section title</h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>№</th>
+                  <th>Тикер</th>
+                  <th>Обновлен</th>
+                  {% for row in systems %}
+                    <th>
+                    {{ row.name }}
+                    </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in tickers %}
+                    {% if row.signals.select_row == True %}
+                        <tr class="row_ticker_select">
+                    {% else %}
+                        <tr>
+                    {% endif %}
+                        <td class="counter"> {{ row.counter }}</td>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.last_update }}</td>
+                        {% for st in systems %}
+                            <td>
+                            {% for key,value in row.signals.items %}
+                                {% if key == st.identifer %}
+                                    {% for val in value %}
+                                        {% if val.type == 'up' %}
+                                            &nbsp;<span style="color:green" title="{{ val.date }}">{{ val.per }}</span>
+                                        {% endif %}
+                                        {% if val.type == 'down' %}
+                                            &nbsp;<span style="color:red" title="{{ val.date }}">{{ val.per }}</span>
+                                        {% endif %}
+                                        {% if val.type == 'in' %}
+                                            &nbsp;<span style="color:black" title="{{ val.date }}">{{ val.per }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        <p>
+        {% for row in paginator %}
+            <a href="{% url 'index' page=row cat_id=cat_id %}">{{ row }}</a>
+        {% endfor %}
+        </p>
+        </div>
+      </div>
+    </div>
 
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    {% block bottom_script %}
+        <script src="http://yandex.st/jquery/1.11.0/jquery.min.js" type="text/javascript"></script>
         <script src="{% static "js/script.js" %}" type="text/javascript"></script>
+        <script src="{% static "js/libs/bootstrap.min.js" %}" type="text/javascript"></script>
     {% endblock %}
-</body>
+    <!--<script src="../../assets/js/docs.min.js"></script>-->
+  </body>
 </html>

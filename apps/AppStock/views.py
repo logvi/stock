@@ -7,7 +7,7 @@ from django.template import loader, RequestContext
 from django.db.models import Max, Min, get_model
 
 from django.shortcuts import render
-from .models import Quotes, Category, Strategy
+from .models import Quotes, Category, Strategy, System
 import datetime
 from AppStockLib import *
 from MyStrategy import *
@@ -23,6 +23,7 @@ def index(request, cat_id, page, template_name='index.html'):
     #cat_obj = Category.objects.get(id=cat_id)
     #quotes_obj = get_model("AppStock", cat_obj.TableName)
     category = Category.objects.all()
+    strategies = Strategy.objects.all()
     tickers = list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end])
     count_page = len(list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')))/page_len + 1
     print(count_page)
@@ -31,9 +32,10 @@ def index(request, cat_id, page, template_name='index.html'):
     while i<=count_page:
         paginator.append(i)
         i += 1
-    strategies = Strategy.objects.filter(category__id=cat_id)
+
     ms = MyStrategy()
-    ms.init(Strategy)
+    ms.init(System)
+    systems = System.objects.all()
     signals = None
     counter = page_start + 1
     for row_ticker in tickers:
@@ -41,7 +43,7 @@ def index(request, cat_id, page, template_name='index.html'):
         row_ticker['signals'] = {}
         row_ticker['counter'] = counter
         counter += 1
-        for row_strat in strategies:
+        for row_strat in systems:
             row_ticker['signals'][str(row_strat.identifer)]=[]
 
         #ticker_id = Ticker.objects.get(name=row_ticker['name'])
@@ -114,7 +116,8 @@ def index(request, cat_id, page, template_name='index.html'):
         'category': category,
         'tickers': tickers,
         'paginator': paginator,
-        'strategies': strategies
+        'strategies': strategies,
+        'systems' : systems
     }
     return render(request, template_name, ctx)
 

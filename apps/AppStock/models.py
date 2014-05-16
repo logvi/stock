@@ -1,30 +1,36 @@
 __author__ = 'vitalijlogvinenko'
 from django.db import models
 
-#strategy list
-class Strategy(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-    identifer = models.CharField(max_length=100, unique=True, db_index=True)
-    class Meta:
-        db_table = "Strategies"
-
 #system list
 class System(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     identifer = models.CharField(max_length=100, unique=True, db_index=True)
-    strategy = models.ManyToManyField(Strategy)
     class Meta:
         db_table = "Systems"
+    def __unicode__(self):
+        return self.name
+
+#strategy list
+class Strategy(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    identifer = models.CharField(max_length=100, unique=True, db_index=True)
+    system = models.ManyToManyField(System)
+    class Meta:
+        db_table = "Strategies"
+    def __unicode__(self):
+        return self.name
 
 #category list
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True)
     TableName = models.CharField(max_length=200)
-    Strategy = models.ManyToManyField(Strategy)
+    #Strategy = models.ManyToManyField(Strategy)
     class Meta:
         db_table = "Categories"
+    def __unicode__(self):
+        return self.name
 
 #name of ticker list
 class Ticker(models.Model):
@@ -38,8 +44,8 @@ class Ticker(models.Model):
     class Meta:
         db_table = "Tickers"
 
-    #def __unicode__(self):
-    #    return self.name
+    def __unicode__(self):
+        return self.name
 
 #quotes of tickers
 class Quotes(models.Model):
@@ -60,8 +66,6 @@ class Quotes(models.Model):
         db_table = "Quotes"
         unique_together = ("ticker", "per", "date", "time")
 
-    # def __unicode__(self):
-    #     return self.ticker
 
 
 
