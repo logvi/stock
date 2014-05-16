@@ -4,7 +4,7 @@ import datetime
 import csv
 import urllib, urlparse
 from django.utils.timezone import utc
-from .models import Ticker, finam_tickers
+from .models import Ticker
 from itertools import groupby
 from lxml import html
 from django.db import IntegrityError
@@ -122,13 +122,18 @@ class AppStockUpload:
             a = s.split(';')
             d = datetime.datetime.strptime(a[2],'%Y%m%d')
             t = datetime.datetime.strptime(a[3],'%H%M%S')
-            ticker = finam_tickers.objects.get(finam_id=Tickers[0])
+            #Тикер должен быть уже создан в базе перед загрузкой
+            try:
+                ticker = Ticker.objects.get(finam_id=Tickers[0])
+            except Ticker.DoesNotExist:
+                print("Тикер с id = "+str(Tickers[0])+"не создан")
+                return False
             #ticker = Ticker.objects.get_or_create(name=str(row[0]),category_id=categoryId)
             now = datetime.datetime.utcnow().replace(tzinfo=utc)
             #Если обновляемая котировка отличается от аналогичной в базе то апдейтим её
             try:
                 k = obj.objects.get(
-                    ticker_id = ticker.ticker_id,
+                    ticker_id = ticker.id,
                     per = a[1],
                     date = d.date(),
                     time = d.time(),
@@ -142,7 +147,7 @@ class AppStockUpload:
             except obj.DoesNotExist:
             #апдейтим либо создаём
                 self.update_or_create(obj,{
-                    'ticker_id' : ticker.ticker_id,
+                    'ticker_id' : ticker.id,
                     'per' : a[1],
                     'date' : d.date(),
                     'time' : d.time() },
@@ -155,7 +160,7 @@ class AppStockUpload:
                     'vol' : a[8]
                 })
                 print('update')
-                Ticker.objects.filter(id=ticker.ticker_id).update(last_update=now)
+                Ticker.objects.filter(id=ticker.id).update(last_update=now)
         # reader = csv.reader(file.read().decode('utf-8'), delimiter=';')
         # for row in reader:
         #     print(str(row))
