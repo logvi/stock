@@ -125,6 +125,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = '/stock/'
+LOGOUT_REDIRECT_URL = '/stock/'
+
 try:
     from stock.settings_prod import *
 except ImportError:
