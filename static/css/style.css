@@ -26,7 +26,7 @@ td.counter{
     font-size: 14px;
 }
 tr:hover{
-    background-color: rgba(236, 248, 236, 0.34);
+    /*background-color: rgba(236, 248, 236, 0.34);*/
 }
 
 a.upload{

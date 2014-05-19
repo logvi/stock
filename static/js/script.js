@@ -4,7 +4,7 @@
 $(document).ready(function(){
     $('select.select_cat').change(function(){
         var cat_id = $(this).val();
-        window.location = '/stock/'+cat_id+'/1/';
+        window.location = '/'+cat_id+'/1/';
     });
 
 });

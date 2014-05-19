@@ -11,6 +11,7 @@ from .models import Quotes, Category, Strategy, System
 import datetime
 from AppStockLib import *
 from MyStrategy import *
+from AppStockSystem import *
 
 def index(request, cat_id, page, template_name='index.html'):
     page_num = page
@@ -206,4 +207,35 @@ def loadFromFinam(obj, category_id, per):
             a.append(row.finam_id)
             print(row.finam_id)
             res = up.uploadFromFinam(obj, category_id, a, None, None, per)
-#Конец loadFromFinam
+    #Конец loadFromFinam
+
+#Вьюха для демо режима
+def demo(request, cat_id, page, template_name='demo.html'):
+    page_num = page #номер страницы
+    page_len = 50 #размер страницы
+    page_start = (int(page_num) - 1)*page_len
+    page_end = page_start + page_len
+    now = datetime.datetime.now()
+    category = Category.objects.all() #список категорий
+    #Получаем все тикеры в текущей категории
+    tickers = list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end])
+    #Получаем количество страниц
+    count_page = len(list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')))/page_len + 1
+    #создаём пагинатор
+    paginator = []
+    i = 1
+    while i<=count_page:
+        paginator.append(i)
+        i += 1
+
+    list_ = Quotes.objects.filter(per='D',ticker_id=3,date__gte='2012-01-01',date__lte=now.date()).order_by('date').values('close','date','low','per','hight')
+
+    #Получаем системы подключенные к стратегии Демо
+    demoStrategy = Strategy.objects.filter(identifer=demo)
+    shSystems = AppStockSystem()
+    func = getattr(shSystems, 'test')
+
+    ctx = {
+
+    }
+    return render(request, template_name, ctx)
