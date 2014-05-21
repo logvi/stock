@@ -16,5 +16,7 @@ urlpatterns = patterns('',
     url(r'^$', views.demo, {'cat_id':1, 'page':1}, name="demo" ),
     url(r'^(?P<cat_id>\d+)/(?P<page>\d+)/$', views.demo , name="demo" ),
 
+    url(r'^getTableData/', views.getTableData, {'cat_id':1, 'page':1}, name="getTableData" ),
+
     url(r'^admin/', include(admin.site.urls)),
 )

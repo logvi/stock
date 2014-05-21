@@ -3,6 +3,7 @@
 
 __author__ = 'vitalijlogvinenko'
 import json
+import inspect
 from django.core import serializers
 from django.http import HttpResponse
 from django.template import loader, RequestContext
@@ -219,6 +220,27 @@ def demo(request, cat_id, page, template_name='demo.html'):
     page_end = page_start + page_len
     now = datetime.datetime.now()
     category = Category.objects.all() #список категорий
+
+    #Получаем системы подключенные к стратегии Демо
+    demoStrategy = Strategy.objects.filter(identifer='demo')
+    demoSystems = demoStrategy[0].system.all()
+
+    ctx = {
+        'cat_id' : int(cat_id),
+        'now': now,
+        'category': category,
+        'systems': demoSystems
+    }
+    return render(request, template_name, ctx)
+
+#Возвращает данные для таблицы
+def getTableData(request, cat_id, page, template_name='demo.html'):
+    page_num = page #номер страницы
+    page_len = 50 #размер страницы
+    page_start = (int(page_num) - 1)*page_len
+    page_end = page_start + page_len
+    now = datetime.datetime.now()
+    category = Category.objects.all() #список категорий
     #Получаем все тикеры в текущей категории
     tickers = Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end]
     tickers = list(tickers)
@@ -272,27 +294,35 @@ def demo(request, cat_id, page, template_name='demo.html'):
     print(request.META['REQUEST_METHOD'])
     if(request.META['REQUEST_METHOD']=='POST'):
         response_data = {}
-        #     row_ticker['last_update'] = str(row_ticker['last_update'].strftime('%d.%m.%Y'))
-        #     if(row_ticker[])
-        tickers = serializeDateForList(tickers)
-        print(tickers)
+        tickers = serializeDateInList(tickers)
         response_data['tickers'] = tickers
-        return HttpResponse(json.dumps(tickers), content_type="application/json")
+
+        demoSystems = list(demoSystems)
+        arSystems = []
+        for row in demoSystems:
+            a = {}
+            row = row.__dict__
+            print(type(row))
+            for key,value in row.items():
+                if(key != '_state'):
+                    a[key] = value
+            arSystems.append(a)
+        response_data['systems'] = arSystems
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
         return render(request, template_name, ctx)
 
-def serializeDateForList(list):
+def serializeDateInList(list):
     _list = list
     for row in _list:
-        serializeDateForDict(row)
+        serializeDateInDict(row)
     return _list
 
-def serializeDateForDict(row):
+def serializeDateInDict(row):
     for key,value in row.items():
-        print(row)
         if ( type(value) == datetime.datetime or type(value) == datetime.date ):
             row[key] = str(row[key].strftime('%d.%m.%Y'))
         if( type(value) == dict ):
-            serializeDateForDict(row[key])
+            serializeDateInDict(row[key])
         if( type(value) == list):
-            serializeDateForList(row[key])
+            serializeDateInList(row[key])
