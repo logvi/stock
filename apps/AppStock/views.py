@@ -2,6 +2,8 @@
 
 
 __author__ = 'vitalijlogvinenko'
+import json
+from django.core import serializers
 from django.http import HttpResponse
 from django.template import loader, RequestContext
 from django.db.models import Max, Min, get_model
@@ -218,7 +220,8 @@ def demo(request, cat_id, page, template_name='demo.html'):
     now = datetime.datetime.now()
     category = Category.objects.all() #список категорий
     #Получаем все тикеры в текущей категории
-    tickers = list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end])
+    tickers = Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end]
+    tickers = list(tickers)
     #Получаем количество страниц
     count_page = len(list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')))/page_len + 1
     #создаём пагинатор
@@ -228,14 +231,68 @@ def demo(request, cat_id, page, template_name='demo.html'):
         paginator.append(i)
         i += 1
 
-    list_ = Quotes.objects.filter(per='D',ticker_id=3,date__gte='2012-01-01',date__lte=now.date()).order_by('date').values('close','date','low','per','hight')
-
     #Получаем системы подключенные к стратегии Демо
-    demoStrategy = Strategy.objects.filter(identifer=demo)
+    demoStrategy = Strategy.objects.filter(identifer='demo')
+    demoSystems = demoStrategy[0].system.all()
     shSystems = AppStockSystem()
-    func = getattr(shSystems, 'test')
 
+    counter = page_start + 1
+    for rowTicker in tickers:
+        rowTicker['signals'] = {}
+        rowTicker['counter'] = counter
+        counter += 1
+        for rowDemoSystems in demoSystems:
+            rowTicker['signals'][rowDemoSystems.identifer] = []
+        #Получаем котировки по тикеру
+        listQuotes = Quotes.objects.filter(per='D',ticker_id=rowTicker['id'],date__gte='2012-01-01',date__lte=now.date()).order_by('date').values('close','date','low','per','hight')
+        if(len(listQuotes)>0):
+            #Запускаем расчет по системе
+            for rowDemoSystems in demoSystems:
+                ar_per = []
+                startSystem = getattr(shSystems, rowDemoSystems.identifer)
+                systemSignal = startSystem(listQuotes, 'macd')
+                if(len(systemSignal)>0):
+                    lastElemSystemSignal = systemSignal[len(systemSignal)-1]
+                    if(lastElemSystemSignal['signal']):
+                        ar_per.append({'per':lastElemSystemSignal['per'],'type':lastElemSystemSignal['type'], 'date':lastElemSystemSignal['date']})
+                        signal_name = lastElemSystemSignal['name']
+                        rowTicker['signals'][signal_name] = ar_per
+        else:
+            print(u'Данные по тикеру '+rowTicker['name']+u' не получены')
+        #print(rowTicker)
     ctx = {
-
+        'cat_id' : int(cat_id),
+        'page' : page_num,
+        'now': now,
+        'category': category,
+        'tickers': tickers,
+        'paginator': paginator,
+        'systems' : demoSystems
     }
-    return render(request, template_name, ctx)
+    print(request.META['REQUEST_METHOD'])
+    if(request.META['REQUEST_METHOD']=='POST'):
+        response_data = {}
+        #     row_ticker['last_update'] = str(row_ticker['last_update'].strftime('%d.%m.%Y'))
+        #     if(row_ticker[])
+        tickers = serializeDateForList(tickers)
+        print(tickers)
+        response_data['tickers'] = tickers
+        return HttpResponse(json.dumps(tickers), content_type="application/json")
+    else:
+        return render(request, template_name, ctx)
+
+def serializeDateForList(list):
+    _list = list
+    for row in _list:
+        serializeDateForDict(row)
+    return _list
+
+def serializeDateForDict(row):
+    for key,value in row.items():
+        print(row)
+        if ( type(value) == datetime.datetime or type(value) == datetime.date ):
+            row[key] = str(row[key].strftime('%d.%m.%Y'))
+        if( type(value) == dict ):
+            serializeDateForDict(row[key])
+        if( type(value) == list):
+            serializeDateForList(row[key])

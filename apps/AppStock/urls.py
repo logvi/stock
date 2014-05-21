@@ -13,7 +13,8 @@ urlpatterns = patterns('',
     url(r'^stock/upload/$', views.upload, {'per':'D','cat_id':1}, name="upload" ),
     url(r'^stock/upload/(?P<cat_id>\d+)/(?P<per>\w+)/$', views.upload, name="upload_per" ),
 
-    url(r'^$', views.demo,{'cat_id':1, 'page':1}, name="demo" ),
+    url(r'^$', views.demo, {'cat_id':1, 'page':1}, name="demo" ),
+    url(r'^(?P<cat_id>\d+)/(?P<page>\d+)/$', views.demo , name="demo" ),
 
     url(r'^admin/', include(admin.site.urls)),
 )

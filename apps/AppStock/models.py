@@ -11,17 +11,6 @@ class System(models.Model):
     def __unicode__(self):
         return self.name
 
-#strategy list
-class Strategy(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-    identifer = models.CharField(max_length=100, unique=True, db_index=True)
-    system = models.ManyToManyField(System)
-    class Meta:
-        db_table = "Strategies"
-    def __unicode__(self):
-        return self.name
-
 #category list
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -44,6 +33,18 @@ class Ticker(models.Model):
     class Meta:
         db_table = "Tickers"
 
+    def __unicode__(self):
+        return self.name
+
+#strategy list
+class Strategy(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    identifer = models.CharField(max_length=100, unique=True, db_index=True)
+    system = models.ManyToManyField(System)
+    ticker = models.ManyToManyField(Ticker)
+    class Meta:
+        db_table = "Strategies"
     def __unicode__(self):
         return self.name
 
