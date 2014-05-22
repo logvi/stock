@@ -14,9 +14,10 @@ urlpatterns = patterns('',
     url(r'^stock/upload/(?P<cat_id>\d+)/(?P<per>\w+)/$', views.upload, name="upload_per" ),
 
     url(r'^$', views.demo, {'cat_id':1, 'page':1}, name="demo" ),
-    url(r'^(?P<cat_id>\d+)/(?P<page>\d+)/$', views.demo , name="demo" ),
+    url(r'^(?P<cat_id>\d+)/$', views.demo , name="demo" ),
 
-    url(r'^getTableData/', views.getTableData, {'cat_id':1, 'page':1}, name="getTableData" ),
+    url(r'^getTableData/', views.getTableData, {'cat_id':1, 'page':0}, name="getTableData" ),
+    url(r'^getTableData/(?P<cat_id>\d+)/(?P<page>\d+)/$', views.getTableData , name="getTableData" ),
 
     url(r'^admin/', include(admin.site.urls)),
 )

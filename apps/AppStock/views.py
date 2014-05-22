@@ -213,11 +213,7 @@ def loadFromFinam(obj, category_id, per):
     #Конец loadFromFinam
 
 #Вьюха для демо режима
-def demo(request, cat_id, page, template_name='demo.html'):
-    page_num = page #номер страницы
-    page_len = 50 #размер страницы
-    page_start = (int(page_num) - 1)*page_len
-    page_end = page_start + page_len
+def demo(request, cat_id, template_name='demo.html'):
     now = datetime.datetime.now()
     category = Category.objects.all() #список категорий
 
@@ -235,17 +231,24 @@ def demo(request, cat_id, page, template_name='demo.html'):
 
 #Возвращает данные для таблицы
 def getTableData(request, cat_id, page, template_name='demo.html'):
-    page_num = page #номер страницы
+    if(request.method == "POST"):
+        page = int(request.POST['page'])
+        cat_id = int(request.POST['cat_id'])
     page_len = 50 #размер страницы
-    page_start = (int(page_num) - 1)*page_len
+    page_start = page
     page_end = page_start + page_len
+    bPageEnd = False #Последняя страница
     now = datetime.datetime.now()
     category = Category.objects.all() #список категорий
     #Получаем все тикеры в текущей категории
-    tickers = Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')[page_start:page_end]
+    tickers = Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')#[page_start:page_end]
     tickers = list(tickers)
     #Получаем количество страниц
-    count_page = len(list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')))/page_len + 1
+    countTickers = len(list(Ticker.objects.filter(category_id=cat_id, used=True).order_by('name').values('id','name','last_update')))
+    #Определяем последняя страница или нет
+    if (page_end>=countTickers):
+        bPageEnd = True
+    count_page = countTickers/page_len + 1
     #создаём пагинатор
     paginator = []
     i = 1
@@ -284,7 +287,7 @@ def getTableData(request, cat_id, page, template_name='demo.html'):
         #print(rowTicker)
     ctx = {
         'cat_id' : int(cat_id),
-        'page' : page_num,
+        'page' : page,
         'now': now,
         'category': category,
         'tickers': tickers,
@@ -294,8 +297,12 @@ def getTableData(request, cat_id, page, template_name='demo.html'):
     print(request.META['REQUEST_METHOD'])
     if(request.META['REQUEST_METHOD']=='POST'):
         response_data = {}
+        #Пробую сортировку
+        tickers.sort(key=sortBySignalDate, reverse=True)
+        print(tickers)
+        #tickers = tickers[page_start:page_end]
         tickers = serializeDateInList(tickers)
-        response_data['tickers'] = tickers
+        response_data['tickers'] = tickers#[page_start:page_end]
 
         demoSystems = list(demoSystems)
         arSystems = []
@@ -308,16 +315,27 @@ def getTableData(request, cat_id, page, template_name='demo.html'):
                     a[key] = value
             arSystems.append(a)
         response_data['systems'] = arSystems
+        response_data['pageEnd'] = bPageEnd
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
         return render(request, template_name, ctx)
 
+def sortBySignalDate(inputStr):
+    #if(inputStr['signals']['diverMACD'][0].has_key('date')):
+    if(len(inputStr['signals']['diverMACD'])>0):
+        return inputStr['signals']['diverMACD'][0]['date']
+    else:
+        return datetime.date(2000,2,1)
+    #return inputStr['last_update']
+
+#Сериализует оюъекты даты в списке
 def serializeDateInList(list):
     _list = list
     for row in _list:
         serializeDateInDict(row)
     return _list
 
+#Сериализует объекты даты в словаре
 def serializeDateInDict(row):
     for key,value in row.items():
         if ( type(value) == datetime.datetime or type(value) == datetime.date ):
