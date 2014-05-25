@@ -1,0 +1,36 @@
+{% extends "base_index.html" %}{% load static %}
+{% block content %}
+    <div class="select_cat">
+        <select class="select_cat">
+        {% for row in category %}
+            {% if row.id == cat_id  %}
+                <option selected value={{ row.id }}>{{ row.name }}</option>
+            {% else %}
+                <option value={{ row.id }}>{{ row.name }}</option>
+            {% endif %}
+        {% endfor %}
+        </select>
+    </div>
+    <div class="update-preloader">
+          Загрузка данных...
+          <div><img src="{% static "img/preloader.GIF" %}"> </div>
+    </div>
+    <div class="upload-data">
+        <button class='btn btn-primary upload-d'> Выгрузить дни</button>&nbsp;
+        <button class='btn btn-primary upload-w'> Выгрузить недели</button>&nbsp;
+        <button class='btn btn-primary upload-m'> Выгрузить месяцы</button>&nbsp;
+    </div>
+    <div class="parsing-data">
+        <div class="textarea-block">
+            <textarea class="parsString">Данные</textarea>
+            <textarea readonly class="parsRes"></textarea>
+        </div>
+        <div class="button-block">
+             <button class="startPars">Парсить</button>
+            <button class="loadPars">Загрузить</button>
+        </div>
+    </div>
+{% endblock %}
+{% block bottom_script %}
+    <script src="{% static "js/upload.js" %}" type="text/javascript"></script>
+{% endblock %}

@@ -15,7 +15,6 @@ class System(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True)
     TableName = models.CharField(max_length=200)
-    #Strategy = models.ManyToManyField(Strategy)
     class Meta:
         db_table = "Categories"
     def __unicode__(self):
@@ -23,7 +22,7 @@ class Category(models.Model):
 
 #name of ticker list
 class Ticker(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     category = models.ForeignKey(Category, db_index=True)
     last_update = models.DateTimeField(null=True)
     finam_id = models.IntegerField(null=True)

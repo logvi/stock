@@ -37,11 +37,13 @@ class AppStockSystem:
     # MACDField - поле в котором хранится значение индикатора MACD
     # На выходе получаем массив вида: [{per:'D'}, type:'UP', signal:True, name:name_strategy, date:'14.05.2014'}]
     def diverMACD(self, qs, MACDField):
+        #print(u"Входящий массив котировок: " + str(qs))
         systemName = self.systems['diverMACD']['identifer']
         if(qs[0].has_key(MACDField) == False):
-            print(u"Нет данных для MACD. Расчитываю значения индикатора...")
+            #print(u"Нет данных для MACD. Расчитываю значения индикатора...")
             indicators = AppStockIndicators()
             qs = indicators.MACD(qs, 12 , 26 , 9 , output=MACDField)
+            #print(u"Массив котировок с наложенными индикаторами: " + str(qs))
         qs = list(qs)
         i = 0
         min_low = qs[i]['low']
@@ -76,6 +78,7 @@ class AppStockSystem:
                     #print("Date = " + str(qs[i-1]['date']) + "; LOW = " + str(min_low) + "; MACD = " + str(x_macd))
                     min_low = qs[i]['low']
             i += 1
+        #print(u"Массив после расчетов по системе: " + str(ar_diver))
         return ar_diver
     #Конец функции diverSignalAll
     #**

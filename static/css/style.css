@@ -84,3 +84,21 @@ tr.row_ticker_select{
     display: none;
     text-align: center;
 }
+
+div.select_cat{
+    margin-bottom: 20px;
+}
+.upload-data{
+    margin-bottom: 20px;
+}
+.parsing-data{
+    margin-bottom: 20px;
+}
+.textarea-block textarea{
+    width: 400px;
+    height: 250px;
+}
+
+.navbar-inverse {
+    background-color: rgba(76, 99, 121, 1) !important;
+}

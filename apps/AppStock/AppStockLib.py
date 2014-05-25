@@ -4,7 +4,7 @@ import datetime
 import csv
 import urllib, urlparse
 from django.utils.timezone import utc
-from .models import Ticker
+from .models import Ticker, Category
 from itertools import groupby
 from lxml import html
 from django.db import IntegrityError
@@ -73,7 +73,7 @@ class AppStockUpload:
             endDate = datetime.datetime.now()
             #endDate = datetime.datetime.strftime(endDate, "%d.%m.%Y")
         else:
-             endDate = datetime.datetime.strptime(endDate, "%d.%m.%Y")
+            endDate = datetime.datetime.strptime(endDate, "%d.%m.%Y")
         startDate = datetime.datetime.strptime(startDate, "%d.%m.%Y")
         TF = {"H1":7, "D":8, "W":9, "M":10}
         #Готовим ссылку
@@ -169,26 +169,31 @@ class AppStockUpload:
 
     #Функция для парсинга id тикеров из сайта Финама или mfd
     #На вход нужен файл в формате txt с html кодом списка тикеров
-    def getTickersFromHTML(self, file, css_attr='li a'):
+    def getTickersFromHTML(self, parsString,  css_attr='li a', isFile=False):
         res = []
-        file = open(file)
-        lines = file.read().decode('utf-8')
+        if(isFile):
+            file = open(parsString)
+            lines = file.read().decode('utf-8')
+        else:
+            lines = parsString
         doc = html.document_fromstring(lines)
         for li in doc.cssselect(css_attr):
             res.append({"id":li.get("value"),"value": li.text})
         return res
 
     #Функци для загрузки id тикеров из финама или mfd ко мне в базу
-    def loadTickersFromHTML(self, file, obj, css_attr='li a', field_id='finam_id'):
-        t = self.getTickersFromHTML(file, css_attr)
+    def loadTickersFromHTML(self, file, obj, catId, css_attr='li a', field_id='finam_id', isFile=False):
+        t = self.getTickersFromHTML(file, css_attr, isFile)
         for row in t:
             print(row['value'] + " = " + row['id'])
-            self.update_or_create(obj, {'name':row['value']}, {'name':row['value'],field_id:row['id']})
+            catObj = Category.objects.get(id=catId)
+            self.update_or_create(obj, {'name':row['value']}, {'name':row['value'],field_id:row['id'],'category':catObj,'used':True})
 
     #Функция "обновить или создать"
     def update_or_create(self, model, filter_kwargs, update_kwargs):
         try:
             k = model.objects.get(**filter_kwargs)
+            print(update_kwargs)
             model.objects.filter(**filter_kwargs).update(id=k.id,**update_kwargs)
         except model.DoesNotExist:
             print('not')

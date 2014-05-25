@@ -132,52 +132,47 @@ def index(request, cat_id, page, template_name='index.html'):
         #return HttpResponse("Нужно авторизоваться")
         return redirect('/login')
 
-def upload(request, cat_id, per):
+def upload(request, cat_id, per, template_name='upload.html'):
     if(request.user.is_authenticated()):
-        #Получаем объект связанный с текущей категорией
-        cat_obj = Category.objects.get(id=cat_id)
-        #quotes_obj = get_model("AppStock", cat_obj.TableName)
-        loadFromFinam(Quotes, cat_id, per)
+        if(request.META['REQUEST_METHOD']=='POST'):
+            per = str(request.POST['per'])
+            cat_id = int(request.POST['cat_id'])
+            loadFromFinam(Quotes, cat_id, per)
+            response_data = {}
+            response_data['data'] = "Выгрузка завершена"
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+        else:
+            category = Category.objects.all() #список категорий
+            #cat_obj = Category.objects.get(id=cat_id)
+            #loadFromFinam(Quotes, cat_id, per)
+            ctx = {
+                'category': category,
 
-        # Tickers = list(mfd_tickers.objects.exclude(ticker_id__isnull=True).values('mfd_id'))
-        # #Tickers = [63, 59994, 62792, 59998, 59817, 59992, 54116, 61157, 59993, 59995, 51987, 61775, 59186, 69, 60508, 46778, 33231, 56693, 29363, 17125, 49748, 51821, 50793, 9834, 39233, 50794, 50994, 32144, 37399, 56252, 44598, 17799, 73, 74, 144, 41369, 157, 168, 183, 204, 28600, 28601, 41228, 41229, 232, 190, 41807, 246, 273, 287, 288, 316, 317, 258, 264, 269, 270, 42053, 42605, 346, 330, 38822, 51850, 336, 342, 396, 383, 44517, 415, 416, 394, 41824, 443, 445, 50968, 53333, 65447, 17107, 460, 506, 64989, 555, 511, 29055, 29058, 571, 49900, 589, 602, 598, 599, 607, 608, 542, 612, 614, 615, 28676, 41967, 14995, 647, 64410, 650, 648, 629, 632, 666, 832, 672, 49747, 855, 856, 61457, 9060, 35831, 716, 880, 51353, 46788, 27847, 891, 9441, 726, 730, 742, 747, 778, 777, 779, 787, 815, 826, 39588, 944, 945, 909, 910, 913, 915, 948, 35798, 967, 975, 54550, 993, 41402, 1273, 1272, 1019, 37247, 36267, 48769, 49749, 60067, 1122, 35928, 28926, 60491, 46012, 53461, 36848, 36847, 1240, 1281, 17327, 58189, 28606, 1353, 1359, 35301, 58324, 58325, 33481, 1372, 1334, 1373, 54102, 54103, 1383, 1384, 1385, 1386, 33198, 63600, 1389, 30298, 57601, 1402, 28561, 41494, 41339, 41340, 1463, 1464, 1466, 1476, 39756, 1418, 1498, 1503, 1506, 30018, 1437, 1529, 1542, 1543, 41820, 1613, 1614, 1615, 1549, 1566, 1567, 1568, 1576, 1579, 1587, 1626, 40778, 32421, 1593, 1639, 35278, 31759, 1658, 1665, 1683, 41980, 1706, 1718, 37859, 1712, 1738, 1764, 1750, 1754, 37883, 1786, 1805, 1798, 44777, 1820, 1826, 1827, 41823]
-        # #Tickers = [{'mfd_id':21018}]
-        # newTickers = {}
-        # i = 0
-        # arLength = len(Tickers)/30
-        # ost = len(Tickers) - arLength*30
-        # if(ost>0):
-        #     arLength += 1
-        # while i<arLength:
-        #     newTickers[i] = list(item['mfd_id'] for item in Tickers[i*30:i*30+30])
-        #     i += 1
-        # i = 0
-        # now = datetime.datetime.today()
-        # week = now - datetime.timedelta(weeks=1)
-        # now = datetime.datetime.strftime(now, '%d.%m.%Y')
-        # week = datetime.datetime.strftime(week,'%d.%m.%Y')
-        # print(now + " ; " + week)
-        # while i<=len(newTickers)-1:
-        #     print(newTickers[i])
-        #     #res = up.uploadFromFinam(Quotes, 1, newTickers[i], '01.01.2014',None,"D")
-        #     #res = up.uploadFromMFD(Quotes, 1, newTickers[i], None, None, "D")
-        #     #res = up.uploadFromMFD(Quotes, 1, newTickers[i], None, None, "W")
-        #     #res = up.uploadFromMFD(Quotes, 1, newTickers[i], None, None, "M")
-        #     #res = up.uploadFromMFD(Quotes, 1, newTickers[i], None, None, "H1")
-        #     print("GOOD"+str(i))
-        #     i += 1
-
-        ctx = {
-            'test': 'uppload',
-        }
-        #return render(request, template_name, ctx)
-        return HttpResponse("Выгрузка завершена. <br><a href='../'>На главную</a>")
+            }
+            return render(request, template_name, ctx)
+        #return HttpResponse("Выгрузка завершена. <br><a href='../'>На главную</a>")
     else:
         return redirect('/login')
 
 def parsing(request):
     if(request.user.is_authenticated()):
-        up = AppStockUpload()
+        if(request.META['REQUEST_METHOD']=='POST'):
+            parsString = request.POST['parsString']
+            saveInDB = request.POST['saveInDB']
+            catId = request.POST['catId']
+            if(saveInDB == '0' or saveInDB == 'false'):
+                saveInDB = False
+            if(saveInDB == '1' or saveInDB == 'true'):
+                saveInDB = True
+            response_data = {}
+            up = AppStockUpload()
+            if(saveInDB):
+                a = up.loadTickersFromHTML(parsString, Ticker, catId)
+                response_data['data']='Операция завершена'
+            else:
+                text = up.getTickersFromHTML(parsString,'li a')
+                response_data['data'] = text
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
         #a = up.loadTickersFromHTML("../pars/pars.txt",finam_tickers)
         #Связываем id Tickers с id finam_tickers
         # t = Ticker.objects.filter(category=2)
@@ -188,7 +183,7 @@ def parsing(request):
         #         f = finam_tickers.objects.filter(name=row.name).update(id=g.id, ticker=row.id)
         #     except finam_tickers.DoesNotExist:
         #         f = None
-        return HttpResponse("Парсировка финама. <br><a href='../'>На главную</a>")
+        #return HttpResponse("Парсировка финама. <br><a href='../'>На главную</a>")
     else:
         return redirect('/login')
 
@@ -198,9 +193,14 @@ def loadFromFinam(obj, category_id, per):
     table_name = obj.__name__
     #Получаем данные по уже выгруженным котировкам
     tickers = obj.objects.raw('''
-        WITH t AS(SELECT ticker_id,max(date) FROM "{table_name}" WHERE per='{per}' GROUP BY ticker_id)
-        SELECT b.id, a.max, b.name, b.finam_id FROM t a
-        INNER JOIN "Tickers" b ON a.ticker_id = b.id AND b.category_id={cat_id} AND b.finam_id IS NOT NULL
+        WITH tt AS (
+            WITH t AS(SELECT ticker_id,max(date) FROM "Quotes" WHERE per='{per}' GROUP BY ticker_id)
+                SELECT b.id, a.max, b.name, b.finam_id FROM t a
+                INNER JOIN "Tickers" b ON a.ticker_id = b.id AND b.category_id={cat_id} AND b.finam_id IS NOT NULL and used=True
+                )
+        SELECT a.id, tt.max, a.name, a.finam_id FROM "Tickers" a
+        LEFT JOIN tt on tt.id = a.id
+        WHERE a.category_id={cat_id} and a.used=True and a.finam_id is not null
     '''.format(table_name=str(table_name),per=str(per),cat_id=category_id))
     tickers = list(tickers)
     #Если данные есть, то делаем догрузку начиная с последней даты котировки
@@ -208,7 +208,10 @@ def loadFromFinam(obj, category_id, per):
         for row in tickers:
             a = []
             date_from = row.max
-            date_from = datetime.datetime.strftime(date_from, "%d.%m.%Y")
+            if(date_from is None):
+                date_from = None
+            else:
+                date_from = datetime.datetime.strftime(date_from, "%d.%m.%Y")
             print(date_from)
             a.append(row.finam_id)
             res = up.uploadFromFinam(obj, category_id, a, date_from, None, per)
